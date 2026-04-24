@@ -1,70 +1,79 @@
-# Getting Started with Create React App
+# ⚡ Pokemint — Flip Intelligence
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Pokemon TCG resell signal tool.
 
-## Available Scripts
+- Built for the aisle.
+- BUY/HOLD/SKIP in under a second.
 
-In the project directory, you can run:
+**Live:** [poke-lootmint.vercel.app](https://poke-lootmint.vercel.app)  
+**Repo:** [github.com/ericsecution/poke-lootmint](https://github.com/ericsecution/poke-lootmint)
 
-### `npm start`
+---
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+## What it does
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+Pokemint tells you — before you pull out your wallet — whether a Pokemon TCG product is worth flipping.
 
-### `npm test`
+- **BUY** → ROI ≥ 60%
+- **HOLD** → ROI ≥ 25%
+- **SKIP** → ROI < 25%
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+Signal is the first thing you see. Profit range is second. Everything else is detail.
 
-### `npm run build`
+---
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+## Features
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+- Signal-dominant card UI — BUY/HOLD/SKIP at 34px, first element, no exceptions
+- Profit range with eBay fee baked in (13%)
+- Type filter pills (ETB, UPC, Booster Bundle, Booster Box, and more)
+- Search by product name
+- Worth Flipping toggle — hides anything under 30% ROI
+- Custom price override — recalculates signal and margin live
+- eBay sold listings deep link per product
+- Mark as Found — log store name + timestamp when you spot it in the wild
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+---
 
-### `npm run eject`
+## Stack
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+- React (Create React App)
+- Single file: `src/App.js`
+- No external dependencies beyond CRA defaults
+- Deployed on Vercel — auto-deploys on push to `main`
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+---
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+## Local dev
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+```bash
+npm install
+npm start
+```
 
-## Learn More
+Runs at `localhost:3000`.
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+---
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+## Deploy
 
-### Code Splitting
+Push to `main`. Vercel handles the rest.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+```bash
+git add .
+git commit -m 'your message'
+git push
+```
 
-### Analyzing the Bundle Size
+---
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+## Version history
 
-### Making a Progressive Web App
+| Version | Change |
+|---------|--------|
+| v3.0.0 | Signal-dominant UI — BUY/HOLD/SKIP as hero element |
+| v1.0.0 | Initial build — price checker, eBay link, Mark as Found, ROI filter |
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+---
 
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+*Built by Eric @ Hype Systems. Calen architects. Silas ships.*
