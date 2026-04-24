@@ -288,10 +288,11 @@ const TYPES = [
 	'Pack',
 	'JP Set',
 ];
-// ─── CONFIG ───────────────────────────────────────────────────
-const FEE_RATE = 0.13;
-// ─── HELPERS ──────────────────────────────────────────────────
 
+// ─── CONFIG ────────────────────────────────────────────────────────────────
+const FEE_RATE = 0.13;
+
+// ─── HELPERS ───────────────────────────────────────────────────────────────
 function calcMargin(retail, low, high) {
 	if (!low) return null;
 	return {
@@ -316,20 +317,17 @@ function getSignal(pct) {
 	if (pct >= 25) return { label: 'HOLD', color: '#ffd700' };
 	return { label: 'SKIP', color: '#ff4444' };
 }
-// ─── FOUND SECTION ───────────────────────────────────────────
 
+// ─── FOUND SECTION ─────────────────────────────────────────────────────────
 function FoundSection({ productId, foundItems, setFoundItems }) {
 	const [pendingStore, setPendingStore] = useState('');
 	const [showInput, setShowInput] = useState(false);
 	const entry = foundItems[productId];
+
 	if (entry) {
 		return (
 			<div>
-				{' '}
-				<div style={styles.foundInfo}>
-					{' '}
-					✓ Spotted at {entry.store} · {entry.ts}{' '}
-				</div>{' '}
+				<div style={styles.foundInfo}>✓ Spotted at {entry.store} · {entry.ts}</div>
 				<button
 					style={{ ...styles.foundBtn, ...styles.unfindBtn }}
 					onClick={(e) => {
@@ -340,24 +338,22 @@ function FoundSection({ productId, foundItems, setFoundItems }) {
 							return n;
 						});
 					}}>
-					{' '}
-					✕ REMOVE SIGHTING{' '}
-				</button>{' '}
+					✕ REMOVE SIGHTING
+				</button>
 			</div>
 		);
 	}
+
 	if (showInput) {
 		return (
 			<div onClick={(e) => e.stopPropagation()}>
-				{' '}
 				<div style={styles.storeInputRow}>
-					{' '}
 					<input
 						style={styles.storeInput}
 						placeholder='Store name'
 						value={pendingStore}
 						onChange={(e) => setPendingStore(e.target.value)}
-					/>{' '}
+					/>
 					<button
 						style={styles.confirmBtn}
 						onClick={(e) => {
@@ -372,13 +368,13 @@ function FoundSection({ productId, foundItems, setFoundItems }) {
 							setShowInput(false);
 							setPendingStore('');
 						}}>
-						{' '}
-						LOG{' '}
-					</button>{' '}
-				</div>{' '}
+						LOG
+					</button>
+				</div>
 			</div>
 		);
 	}
+
 	return (
 		<button
 			style={styles.foundBtn}
@@ -386,23 +382,24 @@ function FoundSection({ productId, foundItems, setFoundItems }) {
 				e.stopPropagation();
 				setShowInput(true);
 			}}>
-			{' '}
-			📍 MARK AS FOUND{' '}
+			📍 MARK AS FOUND
 		</button>
 	);
 }
 
-// ─── PRODUCT CARD ───────────────────────────────────────────
-
+// ─── PRODUCT CARD ───────────────────────────────────────────────────────────
+// v3: BUY/HOLD/SKIP is the hero. Everything else supports it.
 function ProductCard({ p, isOpen, onToggle, foundItems, setFoundItems }) {
 	const [customPrice, setCustomPrice] = useState('');
-	const effectiveRetail =
-		customPrice !== '' ? parseFloat(customPrice) || p.retail : p.retail;
+
+	// Use custom price if entered, fall back to retail
+	const effectiveRetail = customPrice !== '' ? parseFloat(customPrice) || p.retail : p.retail;
 	const m = calcMargin(effectiveRetail, p.resellLow, p.resellHigh);
 	const pct = m ? roiPct(m.netHigh, effectiveRetail) : 0;
 	const bc = barColor(pct);
 	const signal = getSignal(pct);
 	const isFound = !!foundItems[p.id];
+
 	return (
 		<div
 			onClick={onToggle}
@@ -410,163 +407,230 @@ function ProductCard({ p, isOpen, onToggle, foundItems, setFoundItems }) {
 				...styles.card,
 				...(isOpen ? styles.cardOpen : {}),
 				...(isFound ? styles.cardFound : {}),
+				// Left border color signals the decision at a glance before eyes even focus
+				borderLeft: m ? `3px solid ${signal.color}66` : '3px solid #ffffff0a',
 			}}>
-			{' '}
-			<div style={styles.cardTop}>
-				{' '}
-				<div style={styles.cardLeft}>
-					{' '}
-					<div style={styles.badgeRow}>
-						{' '}
-						<span style={styles.typeBadge}>{p.type}</span>{' '}
-						<span>{p.heat}</span>{' '}
-						{isFound && <span style={styles.foundTag}>✓</span>}{' '}
-					</div>{' '}
-					<div style={styles.cardName}>{p.name}</div>{' '}
-					<div style={styles.cardSet}>{p.set}</div>{' '}
-				</div>{' '}
-				<div style={styles.cardRight}>
-					{' '}
-					{m ? (
-						<>
-							{' '}
-							<div style={{ ...styles.profitMain, color: bc }}>
-								{' '}
-								+${m.netLow}-{m.netHigh}{' '}
-							</div>{' '}
-							<div
-								style={{
-									...styles.signalBadge,
-									background: signal.color + '22',
-									color: signal.color,
-								}}>
-								{' '}
-								{signal.label}{' '}
-							</div>{' '}
-							<div style={styles.profitSub}>after fees</div>{' '}
-						</>
-					) : (
-						<div style={styles.profitMain}>—</div>
-					)}{' '}
-				</div>{' '}
-			</div>{' '}
+
+			{/* ── ROW 1: SIGNAL HERO + HEAT ── */}
+			{/* BUY/HOLD/SKIP is the first and largest element. No exceptions. */}
+			<div style={styles.signalRow}>
+				<div
+					style={{
+						...styles.signalHero,
+						color: m ? signal.color : '#444',
+					}}>
+					{m ? signal.label : '—'}
+				</div>
+				<div style={styles.signalRowRight}>
+					<span style={styles.heat}>{p.heat}</span>
+					{isFound && <span style={styles.foundTag}>✓ IN STORE</span>}
+				</div>
+			</div>
+
+			{/* ── ROW 2: PROFIT RANGE ── */}
+			{m && (
+				<div style={{ ...styles.profitRange, color: bc }}>
+					+${m.netLow}–${m.netHigh}{' '}
+					<span style={styles.afterFees}>after fees</span>
+				</div>
+			)}
+
+			{/* ── ROW 3: PRODUCT NAME ── */}
+			<div style={styles.cardName}>{p.name}</div>
+
+			{/* ── ROW 4: TYPE BADGE + RETAIL (supporting info) ── */}
+			<div style={styles.supportingRow}>
+				<span style={styles.typeBadge}>{p.type}</span>
+				<span style={styles.retailSmall}>${p.retail} retail</span>
+				{!m && <span style={{ ...styles.typeBadge, color: '#555' }}>no data</span>}
+			</div>
+
+			{/* ── MARGIN BAR (visual reinforcement) ── */}
 			{m && (
 				<div style={styles.barWrap}>
-					{' '}
 					<div
 						style={{
 							...styles.barFill,
 							width: `${Math.min(pct, 100)}%`,
 							background: bc,
 						}}
-					/>{' '}
+					/>
 				</div>
-			)}{' '}
+			)}
+
+			{/* ── EXPANDED DETAIL (tap to open) ── */}
 			{isOpen && (
-  <div style={styles.detail} onClick={(e) => e.stopPropagation()}>
+				<div style={styles.detail} onClick={(e) => e.stopPropagation()}>
 
-    {/* 🔹 CUSTOM PRICE INPUT */}
-    <div style={{ marginBottom: 10 }}>
-      <input
-        value={customPrice}
-        onChange={(e) => setCustomPrice(e.target.value)}
-        placeholder="Enter custom price"
-        style={{
-          width: '100%',
-          padding: '6px',
-          background: '#111',
-          border: '1px solid #333',
-          color: '#fff'
-        }}
-      />
-    </div>
+					{/* Detail rows: eBay range, margin, ROI */}
+					{m && (
+						<>
+							<div style={styles.detailRow}>
+								<span style={styles.detailLabel}>eBay low (est.)</span>
+								<span style={styles.detailVal}>${p.resellLow}</span>
+							</div>
+							<div style={styles.detailRow}>
+								<span style={styles.detailLabel}>eBay high (est.)</span>
+								<span style={styles.detailVal}>${p.resellHigh}</span>
+							</div>
+							<div style={styles.detailRow}>
+								<span style={styles.detailLabel}>Net profit range</span>
+								<span style={{ ...styles.detailVal, color: bc }}>+${m.netLow}–${m.netHigh}</span>
+							</div>
+							<div style={styles.detailRow}>
+								<span style={styles.detailLabel}>ROI (high estimate)</span>
+								<span style={{ ...styles.detailVal, color: bc }}>{pct}%</span>
+							</div>
+							<div style={styles.detailRow}>
+								<span style={styles.detailLabel}>eBay fee rate</span>
+								<span style={styles.detailVal}>{(FEE_RATE * 100).toFixed(0)}%</span>
+							</div>
+						</>
+					)}
 
-    {/* 🔹 EXISTING CONTENT BELOW (leave yours here) */}
-    <a
-      href={ebayUrl(p.name)}
-      target="_blank"
-      rel="noreferrer"
-      style={styles.ebayBtn}
-    >
-      VIEW SOLD ON EBAY →
-    </a>
+					{/* Notes */}
+					{p.notes && <div style={styles.notesBox}>{p.notes}</div>}
 
-    <FoundSection
-      productId={p.id}
-      foundItems={foundItems}
-      setFoundItems={setFoundItems}
-    />
+					{/* Custom price override — recalculates everything above */}
+					<div style={styles.calcSection}>
+						<div style={styles.calcLabel}>CUSTOM PRICE OVERRIDE</div>
+						<div style={styles.calcRow}>
+							<input
+								value={customPrice}
+								onChange={(e) => setCustomPrice(e.target.value)}
+								placeholder={`$${p.retail} (default)`}
+								style={styles.calcInput}
+							/>
+							{customPrice && m && (
+								<span style={{ ...styles.calcResult, color: bc }}>
+									→ {pct}% ROI
+								</span>
+							)}
+						</div>
+					</div>
 
-  </div>
-)}
-      {' '}
+					{/* eBay sold listings deep link */}
+					<a
+						href={ebayUrl(p.name)}
+						target="_blank"
+						rel="noreferrer"
+						style={styles.ebayBtn}>
+						VIEW SOLD ON EBAY →
+					</a>
+
+					{/* Mark as Found with store + timestamp */}
+					<FoundSection
+						productId={p.id}
+						foundItems={foundItems}
+						setFoundItems={setFoundItems}
+					/>
+				</div>
+			)}
 		</div>
 	);
 }
-// ─── APP ─────────────────────────────────────────────────────
 
+// ─── APP ────────────────────────────────────────────────────────────────────
 export default function App() {
 	const [search, setSearch] = useState('');
 	const [expandedId, setExpandedId] = useState(null);
 	const [foundItems, setFoundItems] = useState({});
-  const [typeFilter, setTypeFilter] = useState('All');
+	const [typeFilter, setTypeFilter] = useState('All');
+	const [worthFlipping, setWorthFlipping] = useState(false); // ROI ≥ 30% filter
+
 	const toggleCard = useCallback((id) => {
 		setExpandedId((prev) => (prev === id ? null : id));
 	}, []);
-const filtered = useMemo(() => {
-  const q = search.toLowerCase();
 
-  return PRODUCTS.filter((p) => {
-    const matchesSearch = p.name.toLowerCase().includes(q);
-    const matchesType = typeFilter === 'All' || p.type === typeFilter;
+	const filtered = useMemo(() => {
+		const q = search.toLowerCase();
+		return PRODUCTS.filter((p) => {
+			const matchesSearch = p.name.toLowerCase().includes(q);
+			const matchesType = typeFilter === 'All' || p.type === typeFilter;
+			if (!matchesSearch || !matchesType) return false;
+			// Worth Flipping toggle: only show cards with ROI ≥ 30%
+			if (worthFlipping) {
+				const m = calcMargin(p.retail, p.resellLow, p.resellHigh);
+				if (!m) return false;
+				return roiPct(m.netHigh, p.retail) >= 30;
+			}
+			return true;
+		});
+	}, [search, typeFilter, worthFlipping]);
 
-    return matchesSearch && matchesType;
-  });
-}, [search, typeFilter]);
 	return (
 		<div style={styles.root}>
-			{' '}
-			<input
-				style={styles.searchBox}
-				value={search}
-				onChange={(e) => setSearch(e.target.value)}
-				placeholder='Search...'
-			/>
-      <div style={{ display: 'flex', gap: 6, marginTop: 10, flexWrap: 'wrap' }}>
-  {TYPES.map((t) => (
-    <button
-      key={t}
-      onClick={() => setTypeFilter(t)}
-      style={{
-        padding: '4px 10px',
-        background: typeFilter === t ? '#ffd700' : '#222',
-        color: typeFilter === t ? '#000' : '#aaa',
-        border: 'none',
-        borderRadius: 6,
-        cursor: 'pointer'
-      }}
-    >
-      {t}
-    </button>
-  ))}
-</div>
-      {' '}
-			{filtered.map((p) => (
-				<ProductCard
-					key={p.id}
-					p={p}
-					isOpen={expandedId === p.id}
-					onToggle={() => toggleCard(p.id)}
-					foundItems={foundItems}
-					setFoundItems={setFoundItems}
+
+			{/* ── HEADER ── */}
+			<div style={styles.header}>
+				<div style={styles.logoRow}>
+					<span style={styles.logoIcon}>⚡</span>
+					<div>
+						<div style={styles.logoTitle}>POKEMINT</div>
+						<div style={styles.logoSub}>FLIP INTELLIGENCE · v3</div>
+					</div>
+				</div>
+
+				{/* Search */}
+				<input
+					style={styles.searchBox}
+					value={search}
+					onChange={(e) => setSearch(e.target.value)}
+					placeholder='Search products...'
 				/>
-			))}{' '}
+
+				{/* Type filter pills */}
+				<div style={styles.filterRow}>
+					{TYPES.map((t) => (
+						<button
+							key={t}
+							onClick={() => setTypeFilter(t)}
+							style={{
+								...styles.pill,
+								...(typeFilter === t ? styles.pillActive : {}),
+							}}>
+							{t}
+						</button>
+					))}
+				</div>
+
+				{/* Worth Flipping toggle */}
+				<div style={styles.toggleRow}>
+					<span style={styles.toggleLabel}>⚡ WORTH FLIPPING ONLY (ROI ≥ 30%)</span>
+					<button
+						onClick={() => setWorthFlipping((v) => !v)}
+						style={{ ...styles.toggleBtn, ...(worthFlipping ? styles.toggleOn : {}) }}>
+						{worthFlipping ? 'ON' : 'OFF'}
+					</button>
+				</div>
+			</div>
+
+			{/* ── CARD LIST ── */}
+			<div style={styles.cardList}>
+				{filtered.length === 0 && (
+					<div style={styles.noResults}>No products match your filters.</div>
+				)}
+				{filtered.map((p) => (
+					<ProductCard
+						key={p.id}
+						p={p}
+						isOpen={expandedId === p.id}
+						onToggle={() => toggleCard(p.id)}
+						foundItems={foundItems}
+						setFoundItems={setFoundItems}
+					/>
+				))}
+			</div>
+
+			{/* ── BOTTOM BAR ── */}
+			<div style={styles.bottomBar}>POKEMINT · HYPE SYSTEMS · v3.0.0</div>
 		</div>
 	);
 }
 
-// ─── STYLES ───────────────────────────────────────────────────────────────────
+// ─── STYLES ─────────────────────────────────────────────────────────────────
 const styles = {
+	// ── Layout
 	root: {
 		minHeight: '100vh',
 		background: '#0a0a0f',
@@ -574,6 +638,8 @@ const styles = {
 		color: '#e8e0d0',
 		paddingBottom: 80,
 	},
+
+	// ── Header
 	header: {
 		background: 'linear-gradient(135deg,#1a1008,#0d0d1a 50%,#0a1a0a)',
 		borderBottom: '1px solid #ffd70033',
@@ -654,38 +720,85 @@ const styles = {
 		borderColor: '#00ff8844',
 		color: '#00ff88',
 	},
-	legend: {
-		display: 'flex',
-		gap: 14,
-		padding: '8px 14px',
-		fontSize: 10,
-		color: '#555',
-		borderBottom: '1px solid #ffffff08',
-		flexWrap: 'wrap',
-	},
+
+	// ── Card list
 	cardList: { padding: '8px 10px' },
+	noResults: {
+		textAlign: 'center',
+		padding: '40px 20px',
+		color: '#444',
+		fontSize: 12,
+	},
+
+	// ── Card shell
 	card: {
 		background: '#ffffff04',
 		border: '1px solid #ffffff0a',
 		borderRadius: 10,
-		padding: '11px 13px',
+		padding: '12px 13px',
 		marginBottom: 7,
 		cursor: 'pointer',
 	},
 	cardOpen: { background: '#ffffff08', borderColor: '#ffd70044' },
-	cardFound: { borderColor: '#00ff8844', background: '#00ff880a' },
-	cardTop: {
+	cardFound: { background: '#00ff880a' },
+
+	// ── v3 SIGNAL HERO — row 1
+	// Signal is the first element. Largest text. No exceptions.
+	signalRow: {
 		display: 'flex',
 		justifyContent: 'space-between',
-		alignItems: 'flex-start',
-		gap: 8,
+		alignItems: 'center',
+		marginBottom: 2,
 	},
-	cardLeft: { flex: 1, minWidth: 0 },
-	badgeRow: {
+	signalHero: {
+		fontSize: 34,        // Hero size. Elias flagged it. Calen set it. Locked.
+		fontWeight: 800,
+		letterSpacing: 1,
+		lineHeight: 1.1,
+	},
+	signalRowRight: {
+		display: 'flex',
+		flexDirection: 'column',
+		alignItems: 'flex-end',
+		gap: 4,
+	},
+	heat: { fontSize: 16 },
+	foundTag: {
+		background: '#00ff8820',
+		color: '#00ff88',
+		fontSize: 9,
+		padding: '2px 6px',
+		borderRadius: 4,
+		fontWeight: 700,
+	},
+
+	// ── v3 PROFIT RANGE — row 2
+	profitRange: {
+		fontSize: 16,
+		fontWeight: 700,
+		marginBottom: 6,
+	},
+	afterFees: {
+		fontSize: 11,
+		color: '#666',
+		fontWeight: 400,
+	},
+
+	// ── v3 PRODUCT NAME — row 3
+	cardName: {
+		fontSize: 13,
+		fontWeight: 700,
+		color: '#e8e0d0',
+		lineHeight: 1.3,
+		marginBottom: 4,
+	},
+
+	// ── v3 SUPPORTING INFO — row 4 (type badge + retail price)
+	supportingRow: {
 		display: 'flex',
 		alignItems: 'center',
-		gap: 5,
-		marginBottom: 3,
+		gap: 8,
+		marginBottom: 6,
 	},
 	typeBadge: {
 		background: '#ffffff10',
@@ -695,39 +808,21 @@ const styles = {
 		borderRadius: 4,
 		fontWeight: 700,
 	},
-	heat: { fontSize: 12 },
-	foundTag: {
-		background: '#00ff8820',
-		color: '#00ff88',
-		fontSize: 9,
-		padding: '2px 6px',
-		borderRadius: 4,
-		fontWeight: 700,
+	retailSmall: {
+		fontSize: 11,
+		color: '#666',
 	},
-	cardName: {
-		fontSize: 13,
-		fontWeight: 700,
-		color: '#e8e0d0',
-		lineHeight: 1.3,
-		marginBottom: 2,
-	},
-	cardSet: { fontSize: 10, color: '#666' },
-	cardRight: {
-		textAlign: 'right',
-		flexShrink: 0,
-		marginTop: 6,
-	},
-	retailPrice: { fontSize: 19, fontWeight: 700, color: '#ffd700' },
-	retailLabel: { fontSize: 9, color: '#555', marginBottom: 3 },
-	flipRange: { fontSize: 13, fontWeight: 700 },
-	flipAfter: { fontSize: 10, color: '#777' },
+
+	// ── MARGIN BAR — row 5 (visual reinforcement)
 	barWrap: {
-		marginTop: 9,
+		marginTop: 4,
 		height: 3,
 		background: '#ffffff08',
 		borderRadius: 2,
 	},
 	barFill: { height: '100%', borderRadius: 2 },
+
+	// ── EXPANDED DETAIL
 	detail: {
 		marginTop: 12,
 		paddingTop: 12,
@@ -750,21 +845,8 @@ const styles = {
 		fontSize: 11,
 		color: '#aaa',
 	},
-	ebayBtn: {
-		display: 'block',
-		background: '#0064d244',
-		border: '1px solid #0064d288',
-		borderRadius: 6,
-		padding: '7px 10px',
-		fontSize: 11,
-		color: '#4da6ff',
-		textAlign: 'center',
-		textDecoration: 'none',
-		fontWeight: 700,
-		letterSpacing: 0.5,
-	},
 	calcSection: {
-		marginTop: 8,
+		marginTop: 4,
 		paddingTop: 8,
 		borderTop: '1px solid #ffffff0d',
 	},
@@ -782,11 +864,26 @@ const styles = {
 		padding: '5px 9px',
 		color: '#e8e0d0',
 		fontSize: 13,
-		width: 100,
+		width: 140,
 		outline: 'none',
 		fontFamily: 'inherit',
 	},
-	calcResult: { fontSize: 12, color: '#888' },
+	calcResult: { fontSize: 12, fontWeight: 700 },
+	ebayBtn: {
+		display: 'block',
+		background: '#0064d244',
+		border: '1px solid #0064d288',
+		borderRadius: 6,
+		padding: '7px 10px',
+		fontSize: 11,
+		color: '#4da6ff',
+		textAlign: 'center',
+		textDecoration: 'none',
+		fontWeight: 700,
+		letterSpacing: 0.5,
+	},
+
+	// ── FOUND SECTION
 	foundBtn: {
 		background: '#00ff8810',
 		border: '1px solid #00ff8833',
@@ -806,7 +903,7 @@ const styles = {
 		borderColor: '#ff444433',
 		color: '#ff4444',
 	},
-	storeInputRow: { display: 'flex', gap: 6, marginTop: 5 },
+	storeInputRow: { display: 'flex', gap: 6 },
 	storeInput: {
 		background: '#ffffff0d',
 		border: '1px solid #ffffff20',
@@ -831,6 +928,8 @@ const styles = {
 		whiteSpace: 'nowrap',
 	},
 	foundInfo: { fontSize: 10, color: '#555', marginBottom: 4 },
+
+	// ── Bottom bar
 	bottomBar: {
 		position: 'fixed',
 		bottom: 0,
@@ -842,45 +941,6 @@ const styles = {
 		fontSize: 10,
 		color: '#444',
 		textAlign: 'center',
-	},
-	noResults: {
-		textAlign: 'center',
-		padding: '40px 20px',
-		color: '#444',
-		fontSize: 12,
-	},
-	profitMain: {
-		fontSize: 28,
-		fontWeight: 800,
-		letterSpacing: 0.5,
-	},
-
-	profitSub: {
-		fontSize: 10,
-		color: '#777',
-		marginBottom: 6,
-	},
-
-	retailWrap: {
-		marginTop: 4,
-	},
-
-	retailPriceSmall: {
-		fontSize: 13,
-		color: '#aaa',
-		fontWeight: 600,
-	},
-
-	retailLabelSmall: {
-		fontSize: 9,
-		color: '#555',
-	},
-	signalBadge: {
-		marginTop: 4,
-		fontSize: 10,
-		fontWeight: 700,
-		padding: '2px 6px',
-		borderRadius: 6,
-		display: 'inline-block',
+		letterSpacing: 1,
 	},
 };
